@@ -1,0 +1,18 @@
+{
+  "source": "src/index.html",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "scripts": {
+    "start": "parcel",
+    "build": "parcel build --no-source-maps"
+  },
+  "devDependencies": {
+    "@types/dagre": "^0.7.48",
+    "parcel": "^2.8.2",
+    "process": "^0.11.10"
+  },
+  "dependencies": {
+    "accessor-fn": "^1.4.1",
+    "dagre": "^0.8.5",
+    "force-graph": "^1.43.0"
+  }
+}

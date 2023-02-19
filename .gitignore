@@ -1,0 +1,4 @@
+trash/
+dist/
+node_modules/
+.parcel-cache/

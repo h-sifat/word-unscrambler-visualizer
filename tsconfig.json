@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "outDir": "./dist",
+    "sourceMap": false,
+    "declaration": false,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "downlevelIteration": false,
+    "allowSyntheticDefaultImports": true,
+
+    "strict": true,
+    "noUnusedLocals": false,
+    "strictNullChecks": true,
+    "noUnusedParameters": false,
+    "useUnknownInCatchVariables": false,
+    "strictPropertyInitialization": true
+  },
+
+  "include": ["./src"]
+}
