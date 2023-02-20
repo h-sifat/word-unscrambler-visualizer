@@ -11,6 +11,8 @@ export type PlaneTrieNodeObject_Interface = Pick<
   "id" | "char" | "isEndOfWord" | "level"
 >;
 
+export type TrieNodeInterface = InstanceType<typeof TrieNode>;
+
 class TrieNode {
   readonly id: number;
   readonly char: string;
