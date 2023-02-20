@@ -17,3 +17,8 @@ export interface LinkObject {
   source?: string | number | NodeObject;
   target?: string | number | NodeObject;
 }
+
+export interface CoordinateInterface {
+  x: number;
+  y: number;
+}

@@ -1,68 +1,93 @@
-// ------------ Importing Force Graph ------------------
-// Importing the default bundle doesn't work for some reason!
+import { ForceGraphCustom, getLayout } from "./util/graph";
+import { drawCircle, drawCircle_Argument, drawText } from "./util/canvas";
 
-// @ts-expect-error No typedef for the browser version
-import __ForceGraph from "force-graph/dist/force-graph.min.js";
+import type { CoordinateInterface } from "./interface";
+import type { ForceGraphInstance, NodeObject } from "force-graph";
+import type { LinkInterface, PlaneTrieNodeObject_Interface } from "./trie";
 
-import type ForceGraphInterface from "force-graph";
-export const ForceGraphCustom: typeof ForceGraphInterface = __ForceGraph as any;
-// ------------ End Importing Force Graph ------------------
-
-import dagre from "dagre";
-import accessorFn from "accessor-fn";
-
-import type { GraphData } from "force-graph";
-
-export interface getLayout_Argument {
-  graphData: GraphData;
-  dagreGraphConfig: any;
+export interface GraphComponent_Argument {
+  element: HTMLElement;
+  link: { arrowLength?: number };
 }
 
-/*
- * @CREDIT This function is copied from one of the examples of the
- * "force-graph" repository.
- * */
-export function getLayout(arg: getLayout_Argument) {
-  const { nodes, links } = arg.graphData;
-  const { nodeWidth = 0, nodeHeight = 0, ...graphCfg } = arg.dagreGraphConfig;
+export default class GraphComponent {
+  static #instances: Map<HTMLElement, GraphComponent> = new Map();
 
-  const getNodeWidth = accessorFn(nodeWidth);
-  const getNodeHeight = accessorFn(nodeHeight);
+  // @ts-expect-error chill man!
+  #forceGraph: ForceGraphInstance;
 
-  const g = new dagre.graphlib.Graph();
-  g.setGraph({
-    ...graphCfg,
-  });
+  constructor(arg: GraphComponent_Argument) {
+    const { element } = arg;
 
-  nodes.forEach((node) =>
-    g.setNode(
-      String(node.id),
-      Object.assign({}, node, {
-        width: getNodeWidth(node),
-        height: getNodeHeight(node),
-      })
-    )
-  );
+    if (GraphComponent.#instances.has(element))
+      return GraphComponent.#instances.get(element)!;
 
-  links.forEach((link) =>
-    g.setEdge(
-      String(link.source)!,
-      String(link.target),
-      Object.assign({}, link)
-    )
-  );
+    let forceGraph = ForceGraphCustom()(element).nodeCanvasObject(
+      this.#nodeRenderer as any
+    );
 
-  dagre.layout(g);
+    const { link } = arg;
+    if ("arrowLength" in link)
+      forceGraph = forceGraph.linkDirectionalArrowLength(link.arrowLength!);
 
-  return {
-    nodes: g.nodes().map((n) => {
-      const node = g.node(n);
-      // @ts-ignore
-      delete node.width;
-      // @ts-ignore
-      delete node.height;
-      return node;
-    }),
-    links: g.edges().map((e) => g.edge(e)),
+    this.#forceGraph = forceGraph;
+  }
+
+  #nodeRenderer = (
+    node: NodeObject & PlaneTrieNodeObject_Interface,
+    ctx: CanvasRenderingContext2D,
+    globalScale: number
+  ) => {
+    const fontSize = 12 / globalScale;
+    const coordinate: CoordinateInterface = { x: node.x!, y: node.y! };
+
+    {
+      const drawCircleArg: drawCircle_Argument = {
+        ctx,
+        center: coordinate,
+        strokeWidth: fontSize / 12.3,
+        radius: (fontSize * /* arbitrary offset */ 1.2) / 2,
+      };
+
+      if (node.isEndOfWord) drawCircleArg.fillColor = "black";
+      else drawCircleArg.strokeColor = "black";
+
+      drawCircle(drawCircleArg);
+    }
+
+    drawText({
+      ctx,
+      coordinate,
+      align: "center",
+      baseline: "middle",
+      text: node.char || "*",
+      font: `${fontSize}px Monospace`,
+      color: node.isEndOfWord ? "white" : "black",
+    });
   };
+
+  setData(graphData: {
+    nodes: PlaneTrieNodeObject_Interface[];
+    links: LinkInterface[];
+  }) {
+    const nodeDiameter = this.#forceGraph.nodeRelSize();
+    const layoutData = getLayout({
+      graphData,
+      dagreGraphConfig: {
+        nodesep: 0,
+        edgesep: 1,
+
+        // root nodes aligned on top
+        rankDir: "TB",
+        linkSource: "target",
+        linkTarget: "source",
+        ranker: "longest-path",
+
+        nodeWidth: nodeDiameter,
+        nodeHeight: nodeDiameter,
+      },
+    });
+
+    this.#forceGraph.graphData(layoutData as any);
+  }
 }
