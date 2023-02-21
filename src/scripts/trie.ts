@@ -81,7 +81,7 @@ export class Trie {
   currentNodeId = Trie.ROOT_NODE_ID + 1;
 
   readonly root: TrieNode = new TrieNode({
-    level: 1,
+    level: 0,
     isEndOfWord: false,
     id: Trie.ROOT_NODE_ID,
     char: Trie.ROOT_NODE_CHAR,

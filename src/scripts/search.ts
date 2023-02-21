@@ -1,10 +1,10 @@
-import { Trie, TrieNodeInterface } from "./trie";
+import { LinkInterface, Trie, TrieNodeInterface } from "./trie";
 
 interface CharSet {
   [char: string]: number;
 }
 
-function stringToCharSet(string: string): CharSet {
+export function stringToCharSet(string: string): CharSet {
   const charSet: CharSet = {};
   for (const char of string)
     if (char in charSet) charSet[char]++;
@@ -13,11 +13,37 @@ function stringToCharSet(string: string): CharSet {
   return charSet;
 }
 
-function search(arg: { string: string; trie: Trie }): string[] {
+export type HighlightLink = (arg: {
+  match: boolean;
+  link: Pick<LinkInterface, "source" | "target">;
+}) => void;
+
+export type HighlightNode = (arg: { id: number; match: boolean }) => void;
+
+interface HighLightFunctions {
+  highlightLink: HighlightLink;
+  highlightNode: HighlightNode;
+  highlightCursor: HighlightNode;
+}
+
+export async function searchTrie(
+  arg: {
+    trie: Trie;
+    string: string;
+    iterationIntervalMs: number;
+  } & HighLightFunctions
+): Promise<string[]> {
+  const { highlightLink, highlightNode, iterationIntervalMs, highlightCursor } =
+    arg;
   const suggestions = new Set<string>();
 
-  findSuggestions({
+  await findSuggestions({
     suggestions,
+    highlightLink,
+    highlightCursor,
+    highlightNode,
+    parentNode: null,
+    iterationIntervalMs,
     node: arg.trie.root,
     charSet: stringToCharSet(arg.string),
   });
@@ -25,37 +51,134 @@ function search(arg: { string: string; trie: Trie }): string[] {
   return [...suggestions];
 }
 
-function findSuggestions(arg: {
-  charSet: CharSet;
-  node: TrieNodeInterface;
-  suggestions: Set<string>;
-}) {
-  const { node, charSet, suggestions } = arg;
+async function findSuggestions(
+  arg: {
+    charSet: CharSet;
+    node: TrieNodeInterface;
+    suggestions: Set<string>;
+    iterationIntervalMs: number;
+    parentNode: TrieNodeInterface | null;
+  } & HighLightFunctions
+) {
+  const {
+    node,
+    charSet,
+    parentNode,
+    suggestions,
+    highlightLink,
+    highlightNode,
+    highlightCursor,
+    iterationIntervalMs,
+  } = arg;
+
+  if (parentNode)
+    highlightLink({
+      match: true,
+      link: { source: parentNode.id, target: node.id },
+    });
+
+  highlightNode({ id: node.id, match: true });
 
   if (node.isEndOfWord)
-    suggestions.add(concatenateCharsByTraversingUpward(node));
+    suggestions.add(
+      await concatenateCharsByTraversingUpward({
+        node,
+        highlightCursor,
+        iterationIntervalMs,
+      })
+    );
 
-  for (const [char, count] of Object.entries(charSet))
-    if (count > 0 && node.hasChild(char)) {
-      charSet[char]--;
-      findSuggestions({
+  let charMatchCount = 0;
+  await forEach({
+    iterationIntervalMs,
+    array: Object.entries(charSet),
+    async callback([char, count]) {
+      if (count < 1 || !node.hasChild(char)) return;
+      charMatchCount++;
+
+      const charSetForSubNodes = { ...charSet };
+      charSetForSubNodes[char]--;
+
+      await findSuggestions({
         suggestions,
-        charSet: { ...charSet },
+        highlightLink,
+        highlightNode,
+        highlightCursor,
+        parentNode: node,
+        iterationIntervalMs,
         node: node.getChild(char)!,
+        charSet: charSetForSubNodes,
       });
-    }
+
+      highlightNode({ id: node.id, match: true });
+    },
+  });
+
+  if (!charMatchCount && !node.isEndOfWord) {
+    highlightNode({ id: node.id, match: false });
+
+    if (parentNode)
+      highlightLink({
+        match: false,
+        link: { source: parentNode.id, target: node.id },
+      });
+  }
 }
 
-function concatenateCharsByTraversingUpward(
-  node: TrieNodeInterface | null
-): string {
-  const charArray = new Array(node?.level || 0);
-  let charIndex = charArray.length - 1;
+function concatenateCharsByTraversingUpward(arg: {
+  node: TrieNodeInterface | null;
+  iterationIntervalMs: number;
+  highlightCursor: HighlightNode;
+}): Promise<string> {
+  return new Promise<string>((resolve) => {
+    const { iterationIntervalMs, highlightCursor } = arg;
+    const { node: startNode } = arg;
 
-  while (node) {
-    charArray[charIndex--] = node.char;
-    node = node.parent;
-  }
+    let currentNode = startNode;
 
-  return charArray.join("");
+    const charArray = new Array(currentNode?.level || 0);
+    let charIndex = charArray.length - 1;
+
+    const intervalId = setInterval(() => {
+      if (!currentNode) {
+        clearInterval(intervalId);
+        resolve(charArray.join(""));
+
+        if (startNode) highlightCursor({ id: startNode!.id, match: true });
+        return;
+      }
+
+      highlightCursor({ id: currentNode.id, match: true });
+
+      charArray[charIndex--] = currentNode.char;
+      currentNode = currentNode.parent;
+    }, iterationIntervalMs);
+  });
+}
+
+export function forEach<T>(arg: {
+  array: T[];
+  iterationIntervalMs: number;
+  callback: (element: T, index: number, array: T[]) => void | Promise<void>;
+}) {
+  const { array, iterationIntervalMs, callback } = arg;
+  return new Promise<void>((resolve) => {
+    let index = 0;
+
+    let timeoutId: any;
+
+    const timeoutCallback = async () => {
+      if (index < array.length) {
+        await callback(array[index], index, array);
+        index++;
+
+        timeoutId = setTimeout(timeoutCallback, iterationIntervalMs);
+      } else {
+        clearTimeout(timeoutId);
+        resolve();
+      }
+    };
+
+    timeoutCallback();
+  });
 }

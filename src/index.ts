@@ -1,5 +1,6 @@
 import { Trie } from "./scripts/trie";
 import GraphComponent from "./scripts/graph";
+import { searchTrie } from "./scripts/search";
 
 const graphElement = document.getElementById("graph")!;
 
@@ -18,8 +19,8 @@ const words = [
   "donkey",
   "duckling",
   "duck",
-  "book",
   "bottle",
+  "book",
   "boy",
   "body",
   "box",
@@ -40,22 +41,37 @@ graphComponent.setData({
   nodes: Object.values(trie.allNodes).map((node) => ({ ...node })),
 });
 
-// console.log(trie.allNodes);
+function getBgColor(match = false) {
+  return match ? "green" : "red";
+}
 
-let cursorId = 1;
+async function main() {
+  const results = await searchTrie({
+    trie,
+    string: "cartgobadtkoy",
+    highlightLink({ link, match }) {
+      const linkId = Trie.makeLinkId(link);
+      graphComponent.linkStyles.set(linkId, {
+        width: 1,
+        color: getBgColor(match),
+      });
+    },
+    highlightNode({ id, match }) {
+      graphComponent.nodeStyles.set(id, { bgColor: getBgColor(match) });
+      graphComponent.cursor = { nodeId: id, color: "black", dashed: true };
+    },
+    highlightCursor({ id, match }) {
+      graphComponent.cursor = {
+        nodeId: id,
+        color: getBgColor(match),
+        dashed: false,
+      };
+    },
+    iterationIntervalMs: 50,
+  });
+  console.log(results);
+}
 
-const timerId = setInterval(() => {
-  if (cursorId > 50) {
-    clearInterval(timerId);
-    graphComponent.cursor = null;
-    return;
-  }
-
-  graphComponent.nodeStyles.clear();
-  graphComponent.cursor = { nodeId: cursorId };
-  graphComponent.nodeStyles.set(cursorId, { bgColor: "green" });
-
-  cursorId++;
-}, 500);
+main();
 
 export {};
