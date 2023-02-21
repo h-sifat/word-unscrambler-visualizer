@@ -21,6 +21,11 @@ export interface NodeStyle {
   textColor?: string;
 }
 
+export interface LinkStyle {
+  width?: number;
+  color?: string;
+}
+
 export default class GraphComponent {
   static #instances: Map<HTMLElement, GraphComponent> = new Map();
 
@@ -29,6 +34,7 @@ export default class GraphComponent {
 
   cursor: NodeCursor | null = null;
   readonly #nodeStyles = new Map<number, NodeStyle>();
+  readonly #linkStyles = new Map<string, LinkStyle>();
 
   constructor(arg: GraphComponent_Argument) {
     const { element } = arg;
@@ -38,7 +44,15 @@ export default class GraphComponent {
 
     let forceGraph = ForceGraphCustom()(element)
       .autoPauseRedraw(false)
-      .nodeCanvasObject(this.#nodeRenderer as any);
+      .nodeCanvasObject(this.#nodeRenderer as any)
+      .linkWidth(
+        ((link: LinkInterface) =>
+          this.#linkStyles.get(link.id)?.width || 1) as any
+      )
+      .linkColor(
+        ((link: LinkInterface) =>
+          this.#linkStyles.get(link.id)?.color || "") as any
+      );
 
     const { link } = arg;
     if ("arrowLength" in link)
@@ -132,5 +146,9 @@ export default class GraphComponent {
 
   get nodeStyles() {
     return this.#nodeStyles;
+  }
+
+  get linkStyles() {
+    return this.#linkStyles;
   }
 }
