@@ -16,13 +16,19 @@ export interface NodeCursor {
   dashed?: boolean;
 }
 
+export interface NodeStyle {
+  bgColor?: string;
+  textColor?: string;
+}
+
 export default class GraphComponent {
   static #instances: Map<HTMLElement, GraphComponent> = new Map();
 
   // @ts-expect-error chill man!
   #forceGraph: ForceGraphInstance;
 
-  cursor: NodeCursor | null = { nodeId: 3, dashed: true };
+  cursor: NodeCursor | null = null;
+  readonly #nodeStyles = new Map<number, NodeStyle>();
 
   constructor(arg: GraphComponent_Argument) {
     const { element } = arg;
@@ -47,15 +53,21 @@ export default class GraphComponent {
     globalScale: number
   ) => {
     const fontSize = 12 / globalScale;
+    const isRootNode = Trie.isRootNode(node);
     const coordinate: CoordinateInterface = { x: node.x!, y: node.y! };
 
-    const isRootNode = Trie.isRootNode(node);
+    const {
+      bgColor = "black",
+      textColor = node.isEndOfWord ? "white" : "black",
+    } = this.#nodeStyles.get(node.id) || {};
 
     {
       let strokeWidth =
         fontSize /
         /* keeps the stroke width almost same in all zoom levels */ 12.3;
       let radius = (fontSize * /* arbitrary offset */ 1.2) / 2;
+
+      // make the root node a little larger
       if (isRootNode) radius *= 1.5;
 
       const drawCircleArg: drawCircle_Argument = {
@@ -65,15 +77,15 @@ export default class GraphComponent {
         center: coordinate,
       };
 
-      if (node.isEndOfWord) drawCircleArg.fillColor = "black";
-      else drawCircleArg.strokeColor = "black";
+      if (node.isEndOfWord) drawCircleArg.fillColor = bgColor;
+      else drawCircleArg.strokeColor = bgColor;
 
       drawCircle(drawCircleArg);
 
       // drawing the cursor
       if (this.cursor && node.id === this.cursor.nodeId) {
-        drawCircleArg.radius *= 1.7;
-        drawCircleArg.strokeWidth! *= 4;
+        drawCircleArg.radius *= 2;
+        drawCircleArg.strokeWidth! *= 1.5;
         drawCircleArg.fillColor = undefined;
         drawCircleArg.dashedStroke = this.cursor.dashed;
         drawCircleArg.strokeColor = this.cursor.color || "black";
@@ -86,10 +98,10 @@ export default class GraphComponent {
       ctx,
       coordinate,
       align: "center",
+      color: textColor,
       baseline: "middle",
       font: `${fontSize}px Monospace`,
       text: isRootNode ? "*" : node.char,
-      color: node.isEndOfWord ? "white" : "black",
     });
   };
 
@@ -116,5 +128,9 @@ export default class GraphComponent {
     });
 
     this.#forceGraph.graphData(layoutData as any);
+  }
+
+  get nodeStyles() {
+    return this.#nodeStyles;
   }
 }

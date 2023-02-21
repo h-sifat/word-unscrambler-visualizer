@@ -45,11 +45,17 @@ graphComponent.setData({
 let cursorId = 1;
 
 const timerId = setInterval(() => {
-  if (cursorId > 50) return clearInterval(timerId);
+  if (cursorId > 50) {
+    clearInterval(timerId);
+    graphComponent.cursor = null;
+    return;
+  }
 
+  graphComponent.nodeStyles.clear();
   graphComponent.cursor = { nodeId: cursorId };
+  graphComponent.nodeStyles.set(cursorId, { bgColor: "green" });
 
   cursorId++;
-}, 30);
+}, 500);
 
 export {};
