@@ -3,11 +3,17 @@ import { drawCircle, drawCircle_Argument, drawText } from "./util/canvas";
 
 import type { CoordinateInterface } from "./interface";
 import type { ForceGraphInstance, NodeObject } from "force-graph";
-import type { LinkInterface, PlaneTrieNodeObject_Interface } from "./trie";
+import { LinkInterface, PlaneTrieNodeObject_Interface, Trie } from "./trie";
 
 export interface GraphComponent_Argument {
   element: HTMLElement;
   link: { arrowLength?: number };
+}
+
+export interface NodeCursor {
+  color?: string;
+  nodeId: number;
+  dashed?: boolean;
 }
 
 export default class GraphComponent {
@@ -16,15 +22,17 @@ export default class GraphComponent {
   // @ts-expect-error chill man!
   #forceGraph: ForceGraphInstance;
 
+  cursor: NodeCursor | null = { nodeId: 3, dashed: true };
+
   constructor(arg: GraphComponent_Argument) {
     const { element } = arg;
 
     if (GraphComponent.#instances.has(element))
       return GraphComponent.#instances.get(element)!;
 
-    let forceGraph = ForceGraphCustom()(element).nodeCanvasObject(
-      this.#nodeRenderer as any
-    );
+    let forceGraph = ForceGraphCustom()(element)
+      .autoPauseRedraw(false)
+      .nodeCanvasObject(this.#nodeRenderer as any);
 
     const { link } = arg;
     if ("arrowLength" in link)
@@ -41,18 +49,37 @@ export default class GraphComponent {
     const fontSize = 12 / globalScale;
     const coordinate: CoordinateInterface = { x: node.x!, y: node.y! };
 
+    const isRootNode = Trie.isRootNode(node);
+
     {
+      let strokeWidth =
+        fontSize /
+        /* keeps the stroke width almost same in all zoom levels */ 12.3;
+      let radius = (fontSize * /* arbitrary offset */ 1.2) / 2;
+      if (isRootNode) radius *= 1.5;
+
       const drawCircleArg: drawCircle_Argument = {
         ctx,
+        radius,
+        strokeWidth,
         center: coordinate,
-        strokeWidth: fontSize / 12.3,
-        radius: (fontSize * /* arbitrary offset */ 1.2) / 2,
       };
 
       if (node.isEndOfWord) drawCircleArg.fillColor = "black";
       else drawCircleArg.strokeColor = "black";
 
       drawCircle(drawCircleArg);
+
+      // drawing the cursor
+      if (this.cursor && node.id === this.cursor.nodeId) {
+        drawCircleArg.radius *= 1.7;
+        drawCircleArg.strokeWidth! *= 4;
+        drawCircleArg.fillColor = undefined;
+        drawCircleArg.dashedStroke = this.cursor.dashed;
+        drawCircleArg.strokeColor = this.cursor.color || "black";
+
+        drawCircle(drawCircleArg);
+      }
     }
 
     drawText({
@@ -60,8 +87,8 @@ export default class GraphComponent {
       coordinate,
       align: "center",
       baseline: "middle",
-      text: node.char || "*",
       font: `${fontSize}px Monospace`,
+      text: isRootNode ? "*" : node.char,
       color: node.isEndOfWord ? "white" : "black",
     });
   };

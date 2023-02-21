@@ -5,25 +5,29 @@ export interface drawCircle_Argument {
   fillColor?: string;
   strokeColor?: string;
   strokeWidth?: number;
+  dashedStroke?: boolean;
   center: CoordinateInterface;
   ctx: CanvasRenderingContext2D;
 }
 
 export function drawCircle(arg: drawCircle_Argument) {
-  const { ctx, radius, center } = arg;
+  const { ctx, radius, center, dashedStroke = false } = arg;
+
+  ctx.setLineDash(dashedStroke ? [2, 2] : []);
 
   ctx.beginPath();
   ctx.strokeStyle = "black";
   ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
 
   if (arg.fillColor) {
-    const { strokeWidth = 1 } = arg;
-    ctx.lineWidth = strokeWidth;
     ctx.fillStyle = arg.fillColor;
     ctx.fill();
   }
 
   if (arg.strokeColor) {
+    const { strokeWidth = 1 } = arg;
+    ctx.lineWidth = strokeWidth;
+
     ctx.strokeStyle = arg.strokeColor;
     ctx.stroke();
   }

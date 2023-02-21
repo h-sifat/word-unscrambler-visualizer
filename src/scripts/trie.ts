@@ -69,20 +69,22 @@ class TrieNode {
 }
 
 export type LinkInterface = {
-  id: number;
+  id: string;
   source: number;
   target: number;
 };
 
 export class Trie {
-  currentNodeId = 0;
-  currentLinkId = 0;
+  static readonly ROOT_NODE_ID = 0;
+  static readonly ROOT_NODE_CHAR = "";
+
+  currentNodeId = Trie.ROOT_NODE_ID + 1;
 
   readonly root: TrieNode = new TrieNode({
-    char: "",
     level: 1,
     isEndOfWord: false,
-    id: this.currentNodeId,
+    id: Trie.ROOT_NODE_ID,
+    char: Trie.ROOT_NODE_CHAR,
   });
   readonly allNodes: {
     [id: number | string]: PlaneTrieNodeObject_Interface;
@@ -106,14 +108,15 @@ export class Trie {
           isEndOfWord: i === word.length - 1,
         });
 
-        const link: LinkInterface = {
+        const link: Partial<LinkInterface> = {
           target: newNode.id,
           source: currentNode.id,
-          id: ++this.currentLinkId,
         };
 
+        link.id = Trie.makeLinkId(link as LinkInterface);
+
         this.allNodes[newNode.id] = newNode.toPlainObject();
-        this.allLinks[link.id] = link;
+        this.allLinks[link.id] = link as LinkInterface;
 
         currentNode = newNode;
       }
@@ -122,5 +125,13 @@ export class Trie {
 
   insertWords(words: string[]) {
     for (let word of words) this.insert(word);
+  }
+
+  static makeLinkId(link: Omit<LinkInterface, "id">) {
+    return `${link.source}:${link.target}`;
+  }
+
+  static isRootNode(node: PlaneTrieNodeObject_Interface) {
+    return node.id === Trie.ROOT_NODE_ID && node.char === Trie.ROOT_NODE_CHAR;
   }
 }

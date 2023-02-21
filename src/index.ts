@@ -40,4 +40,16 @@ graphComponent.setData({
   nodes: Object.values(trie.allNodes).map((node) => ({ ...node })),
 });
 
+// console.log(trie.allNodes);
+
+let cursorId = 1;
+
+const timerId = setInterval(() => {
+  if (cursorId > 50) return clearInterval(timerId);
+
+  graphComponent.cursor = { nodeId: cursorId };
+
+  cursorId++;
+}, 30);
+
 export {};
