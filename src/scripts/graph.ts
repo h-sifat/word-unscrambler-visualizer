@@ -33,6 +33,7 @@ export default class GraphComponent {
   // @ts-expect-error chill man!
   #forceGraph: ForceGraphInstance;
   #element: HTMLElement;
+  readonly #DEFAULT_ZOOM_LEVEL = 1;
 
   cursor: NodeCursor | null = null;
   readonly #nodeStyles = new Map<number, NodeStyle>();
@@ -50,6 +51,7 @@ export default class GraphComponent {
       .width(this.#element.clientWidth)
       .height(this.#element.clientHeight)
       .zoomToFit()
+      .zoom(this.#DEFAULT_ZOOM_LEVEL)
       .nodeCanvasObject(this.#nodeRenderer as any)
       .linkWidth(
         ((link: LinkInterface) =>
@@ -74,7 +76,8 @@ export default class GraphComponent {
         .width(width)
         .height(height)
         .centerAt(0, 0)
-        .zoomToFit();
+        .zoomToFit()
+        .zoom(this.#DEFAULT_ZOOM_LEVEL);
     }, 500);
 
     window.addEventListener("resize", () => {
@@ -167,7 +170,8 @@ export default class GraphComponent {
       .zoomToFit()
       .width(this.#element.clientWidth)
       .height(this.#element.clientHeight)
-      .centerAt(0, 0);
+      .centerAt(0, 0)
+      .zoom(this.#DEFAULT_ZOOM_LEVEL);
   }
 
   get nodeStyles() {
