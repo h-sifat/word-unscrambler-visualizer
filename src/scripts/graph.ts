@@ -87,7 +87,7 @@ export default class GraphComponent {
     ctx: CanvasRenderingContext2D,
     globalScale: number
   ) => {
-    const fontSize = 12 / globalScale;
+    const fontSize = 15 / globalScale;
     const isRootNode = Trie.isRootNode(node);
     const coordinate: CoordinateInterface = { x: node.x!, y: node.y! };
 

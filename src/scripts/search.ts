@@ -91,9 +91,9 @@ async function findSuggestions(
   let charMatchCount = 0;
   await forEach({
     iterationIntervalMs,
-    array: Object.entries(charSet),
-    async callback([char, count]) {
-      if (count < 1 || !node.hasChild(char)) return;
+    array: Object.keys(node.children),
+    async callback(char) {
+      if (!charSet[char]) return;
       charMatchCount++;
 
       const charSetForSubNodes = { ...charSet };
@@ -179,6 +179,6 @@ export function forEach<T>(arg: {
       }
     };
 
-    timeoutCallback();
+    setTimeout(timeoutCallback, iterationIntervalMs);
   });
 }
