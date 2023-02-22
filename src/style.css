@@ -18,9 +18,98 @@ html {
 }
 
 body {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-family: Monospace;
   min-height: 100vh;
+}
+
+*::selection {
+  background-color: black;
+  color: white;
+}
+
+/* ------------------- Form Styles ---------------- */
+form > * {
+  display: block;
+}
+
+form > label {
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+
+form > * + * {
+  margin-top: 1rem;
+}
+
+/* ----------- btn Styles -------------- */
+
+.btn {
+  --box-shadow-offset: 2px;
+  --border-color: black;
+  --shadow-color: black;
+
+  padding: 0.3em 1.5em;
+
+  background-color: white;
+  color: black;
+
+  font-weight: 600;
+  font-size: 1.7rem;
+  text-align: center;
+  letter-spacing: 1.2;
+
+  border: 2px solid var(--border-color);
+  border-radius: 3px;
+  box-shadow: var(--box-shadow-offset) var(--box-shadow-offset)
+    var(--shadow-color);
+
+  transition: background-color 0.2s linear;
+
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  color: white;
+  background-color: black;
+  --shadow-color: black;
+}
+
+.btn:active:not(:disabled) {
+  transform: translate(var(--box-shadow-offset), var(--box-shadow-offset));
+  box-shadow: none;
+}
+
+.btn:disabled {
+  color: grey;
+  border-color: grey;
+  cursor: not-allowed;
+}
+
+.btn.btn-danger {
+  color: red;
+  --border-color: red;
+  --shadow-color: red;
+}
+
+.btn.btn-danger:hover {
+  color: white;
+  background-color: red;
+  --border-color: red;
+  --shadow-color: red;
+}
+
+.btn.btn-success {
+  color: green;
+  --border-color: green;
+  --shadow-color: green;
+}
+
+.btn.btn-success:hover {
+  color: white;
+  background-color: green;
+  --border-color: green;
+  --shadow-color: green;
 }
 
 /* --------------- Header --------------- */
@@ -53,8 +142,7 @@ body {
 
   max-width: 100vw;
 
-  border-top: var(--border);
-  border-bottom: var(--border);
+  border: var(--border);
 }
 
 @media (max-width: 700px) {
@@ -64,9 +152,10 @@ body {
   }
   .graph-section {
     order: 0;
+    border-right: none !important;
   }
+
   .dashboard {
-    border-left: none !important;
     border-top: var(--border);
   }
 }
@@ -79,6 +168,8 @@ body {
   grid-template-columns: 1fr;
   grid-template-rows: auto min-content;
   overflow: hidden;
+
+  border-right: var(--border);
 }
 
 .graph {
@@ -98,9 +189,56 @@ body {
 }
 
 /* --------------- .dashboard --------------- */
+
+/* Words form */
 .dashboard {
   flex: 0;
   min-width: 30rem;
   padding: 1rem;
-  border-left: var(--border);
+}
+
+.words-input {
+  display: block;
+
+  width: 100%;
+  height: 10rem;
+  font-size: inherit;
+  resize: none;
+
+  padding: 0.5rem;
+  border: 2px solid black;
+  border-radius: 2px;
+}
+
+.words-input:focus,
+.search-input:focus {
+  outline: 2px solid cyan;
+}
+
+.words-input-btn {
+  margin-left: auto;
+}
+
+/* Search From */
+
+.speed-slider {
+  width: 100%;
+}
+
+.search-box {
+  display: flex;
+}
+
+.search-input {
+  flex: 1;
+  font-size: inherit;
+  padding: 0.5rem 0.7rem;
+  border: 2px solid black;
+  border-radius: 3px;
+  border-bottom-width: 3px;
+}
+
+.search-btn {
+  margin-left: 0.2em;
+  display: inline-block;
 }

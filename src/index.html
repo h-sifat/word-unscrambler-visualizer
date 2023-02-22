@@ -19,23 +19,45 @@
       <section class="graph-section">
         <div class="graph" id="graph"></div>
         <p class="graph-instructions">
-          mouse wheel: zoom-in/out, filled-node: end of word, the graph is
-          draggable
+          mouse wheel: zoom-in/out, filled-node: end of word, the graph/nodes
+          is/are draggable
         </p>
       </section>
       <section class="dashboard">
-        <div class="input">
-          <textarea name="words-input" id="words-input">
-    Input your words here</textarea
-          >
-        </div>
-        <div class="search">
-          <form action="#">
-            <label for="search-input">Search</label>
-            <input id="search-input" type="text" />
-            <button type="submit">Search</button>
-          </form>
-        </div>
+        <form class="words-form">
+          <label for="words-input">Words</label>
+          <textarea
+            name="words-input"
+            class="words-input"
+            id="words-input"
+            spellcheck="true"
+          ></textarea>
+          <button class="btn words-input-btn" type="submit">Update</button>
+        </form>
+
+        <form class="search-form" action="#">
+          <button class="btn btn-success">Sound: ON</button>
+          <label for="speed-slider">Animation speed: 10ms</label>
+          <input
+            type="range"
+            name="speed-slider"
+            class="speed-slider"
+            id="speed-slider"
+            min="10"
+            max="1000"
+          />
+          <label for="search-input">Query</label>
+          <div class="search-box">
+            <input
+              id="search-input"
+              class="search-input"
+              spellcheck="false"
+              type="text"
+              placeholder="Type your query here..."
+            />
+            <button class="btn search-btn" type="submit">Search</button>
+          </div>
+        </form>
       </section>
     </div>
   </body>

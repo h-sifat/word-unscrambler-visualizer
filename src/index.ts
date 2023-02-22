@@ -48,7 +48,7 @@ async function main() {
 
   const results = await searchTrie({
     trie,
-    string: "cartgobadtkoy",
+    string: "cartgobadtkoysnna",
     highlightLink({ link, match }) {
       const linkId = Trie.makeLinkId(link);
       graphComponent.linkStyles.set(linkId, {
