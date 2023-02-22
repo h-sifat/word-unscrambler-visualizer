@@ -1,3 +1,4 @@
+import debounce from "lodash/debounce";
 import { ForceGraphCustom, getLayout } from "./util/graph";
 import { drawCircle, drawCircle_Argument, drawText } from "./util/canvas";
 
@@ -44,6 +45,8 @@ export default class GraphComponent {
 
     let forceGraph = ForceGraphCustom()(element)
       .autoPauseRedraw(false)
+      .width(element.clientWidth)
+      .height(element.clientHeight)
       .nodeCanvasObject(this.#nodeRenderer as any)
       .linkWidth(
         ((link: LinkInterface) =>
@@ -59,6 +62,16 @@ export default class GraphComponent {
       forceGraph = forceGraph.linkDirectionalArrowLength(link.arrowLength!);
 
     this.#forceGraph = forceGraph;
+
+    const resizeGraph = debounce(() => {
+      this.#forceGraph = this.#forceGraph
+        .width(element.clientWidth)
+        .height(element.clientHeight);
+    }, 500);
+
+    window.addEventListener("resize", () => {
+      resizeGraph();
+    });
   }
 
   #nodeRenderer = (
