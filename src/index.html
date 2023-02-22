@@ -7,6 +7,36 @@
     <script src="./index.ts" type="module" defer></script>
   </head>
   <body>
-    <div id="graph"></div>
+    <header class="header">
+      <h1 class="title">Word Unscrambler Visualizer</h1>
+      <a
+        class="repo-link"
+        href="https://github.com/h-sifat/word-unscrambler-visualizer"
+        >Github</a
+      >
+    </header>
+    <div class="wrapper">
+      <section class="graph-section">
+        <div class="graph" id="graph"></div>
+        <p class="graph-instructions">
+          mouse wheel: zoom-in/out, filled-node: end of word, the graph is
+          draggable
+        </p>
+      </section>
+      <section class="dashboard">
+        <div class="input">
+          <textarea name="words-input" id="words-input">
+    Input your words here</textarea
+          >
+        </div>
+        <div class="search">
+          <form action="#">
+            <label for="search-input">Search</label>
+            <input id="search-input" type="text" />
+            <button type="submit">Search</button>
+          </form>
+        </div>
+      </section>
+    </div>
   </body>
 </html>

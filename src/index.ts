@@ -27,25 +27,25 @@ const words = [
   "boxer",
 ];
 
-const graphComponent = new GraphComponent({
-  element: graphElement,
-  link: { arrowLength: 6 },
-});
-
-const trie = new Trie();
-
-trie.insertWords(words);
-
-graphComponent.setData({
-  links: Object.values(trie.allLinks),
-  nodes: Object.values(trie.allNodes).map((node) => ({ ...node })),
-});
-
-function getBgColor(match = false) {
-  return match ? "green" : "red";
-}
-
 async function main() {
+  const graphComponent = new GraphComponent({
+    element: graphElement,
+    link: { arrowLength: 6 },
+  });
+
+  const trie = new Trie();
+
+  trie.insertWords(words);
+
+  graphComponent.setData({
+    links: Object.values(trie.allLinks),
+    nodes: Object.values(trie.allNodes).map((node) => ({ ...node })),
+  });
+
+  function getBgColor(match = false) {
+    return match ? "green" : "red";
+  }
+
   const results = await searchTrie({
     trie,
     string: "cartgobadtkoy",
@@ -67,7 +67,7 @@ async function main() {
         dashed: false,
       };
     },
-    iterationIntervalMs: 50,
+    iterationIntervalMs: 500,
   });
   console.log(results);
 }

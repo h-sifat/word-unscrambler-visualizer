@@ -32,21 +32,24 @@ export default class GraphComponent {
 
   // @ts-expect-error chill man!
   #forceGraph: ForceGraphInstance;
+  #element: HTMLElement;
 
   cursor: NodeCursor | null = null;
   readonly #nodeStyles = new Map<number, NodeStyle>();
   readonly #linkStyles = new Map<string, LinkStyle>();
 
   constructor(arg: GraphComponent_Argument) {
-    const { element } = arg;
+    this.#element = arg.element;
 
-    if (GraphComponent.#instances.has(element))
-      return GraphComponent.#instances.get(element)!;
+    if (GraphComponent.#instances.has(this.#element))
+      return GraphComponent.#instances.get(this.#element)!;
 
-    let forceGraph = ForceGraphCustom()(element)
+    console.log(this.#element.clientWidth, this.#element.clientHeight);
+    let forceGraph = ForceGraphCustom()(this.#element)
       .autoPauseRedraw(false)
-      .width(element.clientWidth)
-      .height(element.clientHeight)
+      .width(this.#element.clientWidth)
+      .height(this.#element.clientHeight)
+      .zoomToFit()
       .nodeCanvasObject(this.#nodeRenderer as any)
       .linkWidth(
         ((link: LinkInterface) =>
@@ -64,9 +67,14 @@ export default class GraphComponent {
     this.#forceGraph = forceGraph;
 
     const resizeGraph = debounce(() => {
+      const width = this.#element.clientWidth;
+      const height = this.#element.clientHeight;
+
       this.#forceGraph = this.#forceGraph
-        .width(element.clientWidth)
-        .height(element.clientHeight);
+        .width(width)
+        .height(height)
+        .centerAt(0, 0)
+        .zoomToFit();
     }, 500);
 
     window.addEventListener("resize", () => {
@@ -154,7 +162,12 @@ export default class GraphComponent {
       },
     });
 
-    this.#forceGraph.graphData(layoutData as any);
+    this.#forceGraph = this.#forceGraph
+      .graphData(layoutData as any)
+      .zoomToFit()
+      .width(this.#element.clientWidth)
+      .height(this.#element.clientHeight)
+      .centerAt(0, 0);
   }
 
   get nodeStyles() {
