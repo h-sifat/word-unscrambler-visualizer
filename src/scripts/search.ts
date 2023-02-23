@@ -1,6 +1,7 @@
+import { updateStatus_Arg } from "./components/status";
 import { LinkInterface, Trie, TrieNodeInterface } from "./trie";
 
-interface CharSet {
+export interface CharSet {
   [char: string]: number;
 }
 
@@ -24,6 +25,8 @@ export interface HighLightFunctions {
   highlightLink: HighlightLink;
   highlightNode: HighlightNode;
   highlightCursor: HighlightNode;
+  onWordMatch(word: string): void;
+  updateStatus(arg: updateStatus_Arg): void;
 }
 
 export async function searchTrie(
@@ -33,19 +36,21 @@ export async function searchTrie(
     iterationIntervalMs: number;
   } & HighLightFunctions
 ): Promise<string[]> {
-  const { highlightLink, highlightNode, iterationIntervalMs, highlightCursor } =
-    arg;
+  const { trie, string: query, ...rest } = arg;
   const suggestions = new Set<string>();
 
   await findSuggestions({
+    ...rest,
     suggestions,
-    highlightLink,
-    highlightCursor,
-    highlightNode,
+    node: trie.root,
     parentNode: null,
-    iterationIntervalMs,
-    node: arg.trie.root,
-    charSet: stringToCharSet(arg.string),
+    charSet: stringToCharSet(query),
+  });
+
+  arg.updateStatus({
+    node: trie.root,
+    availableChars: {},
+    children: Object.keys(trie.root.children),
   });
 
   return [...suggestions];
@@ -65,6 +70,7 @@ async function findSuggestions(
     charSet,
     parentNode,
     suggestions,
+    updateStatus,
     highlightLink,
     highlightNode,
     highlightCursor,
@@ -77,35 +83,51 @@ async function findSuggestions(
       link: { source: parentNode.id, target: node.id },
     });
 
-  highlightNode({ id: node.id, match: true });
+  const childrenNodeChars = Object.keys(node.children);
 
-  if (node.isEndOfWord)
-    suggestions.add(
-      await concatenateCharsByTraversingUpward({
-        node,
-        highlightCursor,
-        iterationIntervalMs,
-      })
-    );
+  highlightNode({ id: node.id, match: true });
+  updateStatus({
+    node,
+    availableChars: charSet,
+    children: childrenNodeChars,
+    currentlyMatchingChildChar: parentNode?.char,
+  });
+
+  if (node.isEndOfWord) {
+    const word = await concatenateCharsByTraversingUpward({
+      node,
+      highlightCursor,
+      iterationIntervalMs,
+      updateStatus: arg.updateStatus,
+    });
+
+    arg.onWordMatch(word);
+    suggestions.add(word);
+  }
 
   let charMatchCount = 0;
   await forEach({
     iterationIntervalMs,
     array: Object.keys(node.children),
     async callback(char) {
+      updateStatus({
+        node,
+        availableChars: charSet,
+        children: childrenNodeChars,
+        currentlyMatchingChildChar: char,
+      });
+
       if (!charSet[char]) return;
+
       charMatchCount++;
 
       const charSetForSubNodes = { ...charSet };
       charSetForSubNodes[char]--;
 
       await findSuggestions({
+        ...arg,
         suggestions,
-        highlightLink,
-        highlightNode,
-        highlightCursor,
         parentNode: node,
-        iterationIntervalMs,
         node: node.getChild(char)!,
         charSet: charSetForSubNodes,
       });
@@ -129,14 +151,15 @@ function concatenateCharsByTraversingUpward(arg: {
   node: TrieNodeInterface | null;
   iterationIntervalMs: number;
   highlightCursor: HighlightNode;
+  updateStatus: HighLightFunctions["updateStatus"];
 }): Promise<string> {
   return new Promise<string>((resolve) => {
-    const { iterationIntervalMs, highlightCursor } = arg;
+    const { iterationIntervalMs, highlightCursor, updateStatus } = arg;
     const { node: startNode } = arg;
 
     let currentNode = startNode;
 
-    const charArray = new Array(currentNode?.level || 0);
+    const charArray = new Array(currentNode?.level || 0).fill("");
     let charIndex = charArray.length - 1;
 
     const intervalId = setInterval(() => {
@@ -144,11 +167,23 @@ function concatenateCharsByTraversingUpward(arg: {
         clearInterval(intervalId);
         resolve(charArray.join(""));
 
-        if (startNode) highlightCursor({ id: startNode!.id, match: true });
+        if (startNode) {
+          highlightCursor({ id: startNode!.id, match: true });
+          updateStatus({
+            node: startNode!,
+            currentWord: charArray,
+            children: Object.keys(startNode.children),
+          });
+        }
         return;
       }
 
       highlightCursor({ id: currentNode.id, match: true });
+      updateStatus({
+        node: currentNode,
+        currentWord: charArray,
+        children: Object.keys(currentNode.children),
+      });
 
       charArray[charIndex--] = currentNode.char;
       currentNode = currentNode.parent;

@@ -272,9 +272,8 @@ form > * + * {
   background: #45de13;
 }
 
-.current-node > .child-node {
-  color: white;
-  background: red;
+.current-word-label > .current-word {
+  font-weight: normal;
 }
 
 /* Results Section */
@@ -289,8 +288,4 @@ form > * + * {
   .results {
     height: 18rem;
   }
-}
-
-.current-word-label > .current-word {
-  font-weight: normal;
 }
