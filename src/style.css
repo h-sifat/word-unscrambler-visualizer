@@ -88,30 +88,31 @@ form > * + * {
 
 .btn:disabled {
   color: grey;
+  --shadow-color: grey;
   border-color: grey;
   cursor: not-allowed;
 }
 
-.btn.btn-danger {
+.btn.btn-danger:not(.btn.btn-danger:disabled) {
   color: red;
   --border-color: red;
   --shadow-color: red;
 }
 
-.btn.btn-danger:hover {
+.btn.btn-danger:hover:not(.btn.btn-danger:disabled) {
   color: white;
   background-color: red;
   --border-color: red;
   --shadow-color: red;
 }
 
-.btn.btn-success {
+.btn.btn-success:not(.btn.btn-success:disabled) {
   color: green;
   --border-color: green;
   --shadow-color: green;
 }
 
-.btn.btn-success:hover {
+.btn.btn-success:hover:not(.btn.btn-success:disabled) {
   color: white;
   background-color: green;
   --border-color: green;
