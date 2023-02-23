@@ -138,6 +138,15 @@ form > * + * {
 
 .repo-link {
   font-size: 2.8rem;
+  width: 3rem;
+  height: 3rem;
+}
+
+.repo-link > img {
+  max-width: 100%;
+  display: block;
+  padding-top: 11.5%;
+  margin-left: -0.8rem;
 }
 
 /* --------------- Wrapper --------------- */
