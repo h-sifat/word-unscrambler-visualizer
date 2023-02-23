@@ -235,6 +235,10 @@ form > * + * {
   outline: 2px solid cyan;
 }
 
+.search-btn {
+  max-height: 3.23rem;
+}
+
 .words-input-btn {
   margin-left: auto;
 }
