@@ -20,7 +20,7 @@ export type HighlightLink = (arg: {
 
 export type HighlightNode = (arg: { id: number; match: boolean }) => void;
 
-interface HighLightFunctions {
+export interface HighLightFunctions {
   highlightLink: HighlightLink;
   highlightNode: HighlightNode;
   highlightCursor: HighlightNode;

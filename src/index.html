@@ -42,9 +42,13 @@
           </button>
         </form>
 
-        <form class="search-form" action="#">
-          <button class="btn btn-success">Sound-Fx: ON</button>
-          <label for="speed-slider">Animation speed: 10ms</label>
+        <form class="search-form" id="search-form" action="#">
+          <button class="btn btn-success" id="sound-fx-btn">
+            Sound-Fx: ON
+          </button>
+          <label for="speed-slider" id="speed-slider-label"
+            >Loop interval: 10ms</label
+          >
           <input
             type="range"
             name="speed-slider"
@@ -62,7 +66,9 @@
               type="text"
               placeholder="Type your query here..."
             />
-            <button class="btn search-btn" type="submit">Search</button>
+            <button class="btn search-btn" id="search-btn" type="submit">
+              Search
+            </button>
           </div>
         </form>
 

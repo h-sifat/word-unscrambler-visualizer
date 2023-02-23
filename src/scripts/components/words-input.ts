@@ -10,12 +10,16 @@ const submitBtn = document.getElementById(
 
 const MAX_ALLOWED_WORD_LENGTH = 25;
 function getWordsFromInput(input: string) {
-  return input
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z\s]/gi, "")
-    .split(/\s+/g)
-    .filter((w) => w.length <= MAX_ALLOWED_WORD_LENGTH);
+  return [
+    ...new Set(
+      input
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z\s]/gi, "")
+        .split(/\s+/g)
+        .filter((w) => w.length <= MAX_ALLOWED_WORD_LENGTH)
+    ),
+  ];
 }
 
 export type OnWordsSubmit = (words: string[]) => void;
@@ -31,7 +35,8 @@ export default class WordsInput {
     WordsInput.#instance = this;
 
     wordsInputForm.addEventListener("submit", this.#handleSubmit);
-    wordsTextAreaInput.value = "";
+    wordsTextAreaInput.value =
+      "bag bat book box cat car cart cargo dog duck dogs apple axe axel arrow all doll";
   }
 
   #handleSubmit = (e: any) => {

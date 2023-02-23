@@ -249,6 +249,10 @@ form > * + * {
   border-bottom-width: 3px;
 }
 
+.search-input:disabled {
+  border-color: grey;
+}
+
 .search-btn {
   margin-left: 0.2em;
   display: inline-block;
