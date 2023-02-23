@@ -72,6 +72,6 @@ async function main() {
   console.log(results);
 }
 
-main();
+// main();
 
 export {};

@@ -33,13 +33,19 @@ form > * {
   display: block;
 }
 
-form > label {
+form > label,
+.label {
+  user-select: none;
   font-size: 1.7rem;
   font-weight: 600;
 }
 
 form > * + * {
   margin-top: 1rem;
+}
+
+.label {
+  margin: 1rem 0;
 }
 
 /* ----------- btn Styles -------------- */
@@ -241,4 +247,41 @@ form > * + * {
 .search-btn {
   margin-left: 0.2em;
   display: inline-block;
+}
+
+/* Status Styles */
+
+.status-section,
+.result-section {
+  margin-top: 1.5rem;
+  border-top: var(--border);
+}
+
+.available-chars > .match,
+.current-node > .child-node.match {
+  color: white;
+  background: #45de13;
+}
+
+.current-node > .child-node {
+  color: white;
+  background: red;
+}
+
+/* Results Section */
+
+.results {
+  overflow: auto;
+  padding: 0.4em 0.5em;
+  border: 2px solid black;
+}
+
+@media (max-height: 770px) {
+  .results {
+    height: 18rem;
+  }
+}
+
+.current-word-label > .current-word {
+  font-weight: normal;
 }

@@ -36,7 +36,7 @@
         </form>
 
         <form class="search-form" action="#">
-          <button class="btn btn-success">Sound: ON</button>
+          <button class="btn btn-success">Sound-Fx: ON</button>
           <label for="speed-slider">Animation speed: 10ms</label>
           <input
             type="range"
@@ -58,6 +58,31 @@
             <button class="btn search-btn" type="submit">Search</button>
           </div>
         </form>
+
+        <section class="status-section">
+          <div class="label">Current Node</div>
+          <div class="current-node">
+            char: a, level: 0, end-of-word, child:
+            <span class="child-node">x</span>
+          </div>
+          <div class="label">Available Characters</div>
+          <div class="available-chars">
+            a:2,b<span class="match">c</span>defal
+          </div>
+        </section>
+
+        <section class="result-section">
+          <div class="label current-word-label">
+            Current Word: <span class="current-word">llo</span>
+          </div>
+
+          <div class="label">Results</div>
+          <div class="results">
+            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Atque
+            iure, quibusdam excepturi veniam possimus laudantium rem hic ad et,
+            illum dolore. Asperiores?
+          </div>
+        </section>
       </section>
     </div>
   </body>
