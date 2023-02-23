@@ -1,40 +1,23 @@
 import { Trie } from "./scripts/trie";
 import GraphComponent from "./scripts/graph";
 import { searchTrie } from "./scripts/search";
+import WordsInput from "./scripts/components/words-input";
 
-const graphElement = document.getElementById("graph")!;
+const wordsInput = new WordsInput();
+const graphComponent = new GraphComponent({
+  element: document.getElementById("graph")!,
+  link: { arrowLength: 6 },
+});
 
-const words = [
-  "cat",
-  "cattle",
-  "catling",
-  "car",
-  "cargo",
-  "bat",
-  "battle",
-  "bad",
-  "dog",
-  "donna",
-  "dogs",
-  "donkey",
-  "duckling",
-  "duck",
-  "bottle",
-  "book",
-  "boy",
-  "body",
-  "box",
-  "boxer",
-];
+let trie = makeTrie(wordsInput.currentWords);
 
-async function main() {
-  const graphComponent = new GraphComponent({
-    element: graphElement,
-    link: { arrowLength: 6 },
-  });
+wordsInput.onSubmit = (words) => {
+  trie = makeTrie(words);
+};
 
+function makeTrie(words: string[]) {
+  wordsInput.disable();
   const trie = new Trie();
-
   trie.insertWords(words);
 
   graphComponent.setData({
@@ -42,6 +25,11 @@ async function main() {
     nodes: Object.values(trie.allNodes).map((node) => ({ ...node })),
   });
 
+  wordsInput.enable();
+  return trie;
+}
+
+async function main() {
   function getBgColor(match = false) {
     return match ? "green" : "red";
   }

@@ -31,8 +31,7 @@ export default class WordsInput {
     WordsInput.#instance = this;
 
     wordsInputForm.addEventListener("submit", this.#handleSubmit);
-
-    wordsTextAreaInput.value = "type some words here and hit update";
+    wordsTextAreaInput.value = "";
   }
 
   #handleSubmit = (e: any) => {
