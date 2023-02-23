@@ -45,7 +45,6 @@ export default class GraphComponent {
     if (GraphComponent.#instances.has(this.#element))
       return GraphComponent.#instances.get(this.#element)!;
 
-    console.log(this.#element.clientWidth, this.#element.clientHeight);
     let forceGraph = ForceGraphCustom()(this.#element)
       .autoPauseRedraw(false)
       .width(this.#element.clientWidth)
