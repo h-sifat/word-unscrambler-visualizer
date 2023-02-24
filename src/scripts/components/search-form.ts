@@ -29,7 +29,6 @@ setAnimationSpeedLabel(DEFAULT_ANIMATION_SPEED);
 
 export interface SearchFormData {
   query: string;
-  isSoundOn: boolean;
   animationSpeed: number;
 }
 
@@ -39,7 +38,6 @@ export type OnSearch = (arg: SearchFormData) => void;
 export default class SearchForm {
   static #instance: SearchForm | null = null;
 
-  #isSoundOn = true;
   #animationSpeed = DEFAULT_ANIMATION_SPEED;
   #query = "";
 
@@ -164,7 +162,6 @@ export default class SearchForm {
   get formData(): SearchFormData {
     return {
       query: this.#query,
-      isSoundOn: this.#isSoundOn,
       animationSpeed: this.#animationSpeed,
     };
   }

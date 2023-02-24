@@ -1,3 +1,4 @@
+import timerManager from "./util/timer-manager";
 import { updateStatus_Arg } from "./components/status";
 import { LinkInterface, Trie, TrieNodeInterface } from "./trie";
 
@@ -21,10 +22,11 @@ export type HighlightLink = (arg: {
 
 export type HighlightNode = (arg: { id: number; match: boolean }) => void;
 
-export interface HighLightFunctions {
+export interface CommonFunctionsArgs {
   highlightLink: HighlightLink;
   highlightNode: HighlightNode;
   highlightCursor: HighlightNode;
+  shouldStopSearching(): boolean;
   onWordMatch(word: string): void;
   updateStatus(arg: updateStatus_Arg): void;
 }
@@ -34,7 +36,7 @@ export async function searchTrie(
     trie: Trie;
     string: string;
     iterationIntervalMs: number;
-  } & HighLightFunctions
+  } & CommonFunctionsArgs
 ): Promise<string[]> {
   const { trie, string: query, ...rest } = arg;
   const suggestions = new Set<string>();
@@ -63,7 +65,7 @@ async function findSuggestions(
     suggestions: Set<string>;
     iterationIntervalMs: number;
     parentNode: TrieNodeInterface | null;
-  } & HighLightFunctions
+  } & CommonFunctionsArgs
 ) {
   const {
     node,
@@ -75,7 +77,10 @@ async function findSuggestions(
     highlightNode,
     highlightCursor,
     iterationIntervalMs,
+    shouldStopSearching,
   } = arg;
+
+  if (shouldStopSearching()) return;
 
   if (parentNode)
     highlightLink({
@@ -86,18 +91,13 @@ async function findSuggestions(
   const childrenNodeChars = Object.keys(node.children);
 
   highlightNode({ id: node.id, match: true });
-  updateStatus({
-    node,
-    availableChars: charSet,
-    children: childrenNodeChars,
-    currentlyMatchingChildChar: parentNode?.char,
-  });
 
   if (node.isEndOfWord) {
     const word = await concatenateCharsByTraversingUpward({
       node,
       highlightCursor,
       iterationIntervalMs,
+      shouldStopSearching,
       updateStatus: arg.updateStatus,
     });
 
@@ -110,6 +110,8 @@ async function findSuggestions(
     iterationIntervalMs,
     array: Object.keys(node.children),
     async callback(char) {
+      if (shouldStopSearching()) return;
+
       updateStatus({
         node,
         availableChars: charSet,
@@ -147,14 +149,20 @@ async function findSuggestions(
   }
 }
 
-function concatenateCharsByTraversingUpward(arg: {
-  node: TrieNodeInterface | null;
-  iterationIntervalMs: number;
-  highlightCursor: HighlightNode;
-  updateStatus: HighLightFunctions["updateStatus"];
-}): Promise<string> {
+function concatenateCharsByTraversingUpward(
+  arg: {
+    node: TrieNodeInterface | null;
+    iterationIntervalMs: number;
+    highlightCursor: HighlightNode;
+  } & Pick<CommonFunctionsArgs, "updateStatus" | "shouldStopSearching">
+): Promise<string> {
   return new Promise<string>((resolve) => {
-    const { iterationIntervalMs, highlightCursor, updateStatus } = arg;
+    const {
+      iterationIntervalMs,
+      highlightCursor,
+      updateStatus,
+      shouldStopSearching,
+    } = arg;
     const { node: startNode } = arg;
 
     let currentNode = startNode;
@@ -162,7 +170,8 @@ function concatenateCharsByTraversingUpward(arg: {
     const charArray = new Array(currentNode?.level || 0).fill("");
     let charIndex = charArray.length - 1;
 
-    const intervalId = setInterval(() => {
+    const intervalId = timerManager.setInterval(() => {
+      if (shouldStopSearching()) return;
       if (!currentNode) {
         clearInterval(intervalId);
         resolve(charArray.join(""));
@@ -207,13 +216,16 @@ export function forEach<T>(arg: {
         await callback(array[index], index, array);
         index++;
 
-        timeoutId = setTimeout(timeoutCallback, iterationIntervalMs);
+        timeoutId = timerManager.setTimeout(
+          timeoutCallback,
+          iterationIntervalMs
+        );
       } else {
         clearTimeout(timeoutId);
         resolve();
       }
     };
 
-    setTimeout(timeoutCallback, iterationIntervalMs);
+    timerManager.setTimeout(timeoutCallback, iterationIntervalMs);
   });
 }

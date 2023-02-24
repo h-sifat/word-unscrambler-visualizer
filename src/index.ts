@@ -2,13 +2,22 @@ import { Trie } from "./scripts/trie";
 import GraphComponent from "./scripts/graph";
 import Status from "./scripts/components/status";
 import Results from "./scripts/components/results";
+import timerManager from "./scripts/util/timer-manager";
 import SearchForm from "./scripts/components/search-form";
 import WordsInput from "./scripts/components/words-input";
-import { HighLightFunctions, searchTrie } from "./scripts/search";
+import { CommonFunctionsArgs, searchTrie } from "./scripts/search";
+
+let shouldStopSearching = false;
+
+const searchFrom = new SearchForm();
+searchFrom.onStopSearch = () => {
+  shouldStopSearching = true;
+  // clear all javascript setTimeout and setInterval
+  timerManager.clear();
+};
 
 const status = new Status();
 const foundWords = new Results();
-const searchFrom = new SearchForm();
 const wordsInput = new WordsInput();
 const graphComponent = new GraphComponent({
   element: document.getElementById("graph")!,
@@ -38,7 +47,7 @@ function makeTrie(words: string[]) {
 function getBgColor(match = false) {
   return match ? "green" : "red";
 }
-const graphHighlightFunctions: HighLightFunctions = {
+const graphHighlightFunctions: CommonFunctionsArgs = {
   highlightLink({ link, match }) {
     const linkId = Trie.makeLinkId(link);
     graphComponent.linkStyles.set(linkId, {
@@ -59,6 +68,7 @@ const graphHighlightFunctions: HighLightFunctions = {
   },
   updateStatus: (arg) => status.update(arg),
   onWordMatch: (word) => foundWords.push(word),
+  shouldStopSearching: () => shouldStopSearching,
 };
 
 function clearGraphHighLights(graphComponent: GraphComponent) {
@@ -67,10 +77,11 @@ function clearGraphHighLights(graphComponent: GraphComponent) {
   graphComponent.nodeStyles.clear();
 }
 
-searchFrom.onSearch = async ({ animationSpeed, isSoundOn, query }) => {
+searchFrom.onSearch = async ({ animationSpeed, query }) => {
   clearGraphHighLights(graphComponent);
   foundWords.clear();
   wordsInput.disable();
+  shouldStopSearching = false;
 
   await searchTrie({
     trie,
