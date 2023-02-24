@@ -3,7 +3,6 @@ import { toggleAttributes } from "../util/html";
 // --------- Selecting Elements ----------
 const searchForm = document.getElementById("search-form") as HTMLFormElement;
 
-const soundFxBtn = document.getElementById("sound-fx-btn") as HTMLButtonElement;
 const searchBtn = document.getElementById("search-btn") as HTMLButtonElement;
 const searchQueryInput = document.getElementById(
   "search-input"
@@ -17,7 +16,6 @@ const animationSpeedSliderLabel = document.getElementById(
 ) as HTMLLabelElement;
 
 const elementsToDisable = Object.freeze([
-  soundFxBtn,
   searchQueryInput,
   animationSpeedSlider,
 ]);
@@ -56,7 +54,6 @@ export default class SearchForm {
     SearchForm.#instance = this;
 
     this.#setUpSliderEventHandlers();
-    this.#setUpSoundBtnEventHandlers();
     this.#setUpQueryInputEventHandlers();
     this.#setUpSearchButtonEventHandlers();
 
@@ -109,27 +106,6 @@ export default class SearchForm {
     inputHandler({ preventDefault() {} } as any);
 
     searchQueryInput.addEventListener("input", inputHandler);
-  }
-
-  #setUpSoundBtnEventHandlers() {
-    soundFxBtn.addEventListener("click", (e) => {
-      // I don't know why hitting "enter" from the query input clicks
-      // this button. I'm adding the next line just to prevent that.
-      if (document.activeElement !== soundFxBtn || this.#isFormDisabled)
-        return e.preventDefault();
-
-      this.#isSoundOn = !this.#isSoundOn;
-
-      if (this.#isSoundOn) {
-        soundFxBtn.classList.remove("btn-danger");
-        soundFxBtn.classList.add("btn-success");
-      } else {
-        soundFxBtn.classList.add("btn-danger");
-        soundFxBtn.classList.remove("btn-success");
-      }
-
-      setSoundFxBtnLabel(this.#isSoundOn);
-    });
   }
 
   #setUpSliderEventHandlers() {
@@ -197,11 +173,6 @@ export default class SearchForm {
     if (!this.#isSearching) return;
     this.#searchBtnEventHandler({ preventDefault() {} } as any, true);
   }
-}
-
-// Utility Functions
-function setSoundFxBtnLabel(isOn: boolean) {
-  soundFxBtn.innerText = `Sound-Fx: ${isOn ? "ON" : "OFF"}`;
 }
 
 function setAnimationSpeedLabel(value: number) {
