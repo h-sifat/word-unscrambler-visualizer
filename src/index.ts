@@ -1,15 +1,15 @@
 import { Trie } from "./scripts/trie";
 import GraphComponent from "./scripts/graph";
-import { HighLightFunctions, searchTrie } from "./scripts/search";
-import WordsInput from "./scripts/components/words-input";
-import SearchForm from "./scripts/components/search-form";
 import Status from "./scripts/components/status";
 import Results from "./scripts/components/results";
+import SearchForm from "./scripts/components/search-form";
+import WordsInput from "./scripts/components/words-input";
+import { HighLightFunctions, searchTrie } from "./scripts/search";
 
-const foundWords = new Results();
 const status = new Status();
-const wordsInput = new WordsInput();
+const foundWords = new Results();
 const searchFrom = new SearchForm();
+const wordsInput = new WordsInput();
 const graphComponent = new GraphComponent({
   element: document.getElementById("graph")!,
   link: { arrowLength: 6 },
@@ -70,15 +70,17 @@ function clearGraphHighLights(graphComponent: GraphComponent) {
 searchFrom.onSearch = async ({ animationSpeed, isSoundOn, query }) => {
   clearGraphHighLights(graphComponent);
   foundWords.clear();
+  wordsInput.disable();
 
-  const results = await searchTrie({
+  await searchTrie({
     trie,
     string: query,
-    iterationIntervalMs: animationSpeed,
     ...graphHighlightFunctions,
+    iterationIntervalMs: animationSpeed,
   });
 
   searchFrom.stopSearching();
+  wordsInput.enable();
 };
 
 export {};
