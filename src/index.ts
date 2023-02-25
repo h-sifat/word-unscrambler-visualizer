@@ -7,22 +7,22 @@ import SearchForm from "./scripts/components/search-form";
 import WordsInput from "./scripts/components/words-input";
 import { CommonFunctionsArgs, searchTrie } from "./scripts/search";
 
-let shouldStopSearching = false;
-
-const searchFrom = new SearchForm();
-searchFrom.onStopSearch = () => {
-  shouldStopSearching = true;
-  // clear all javascript setTimeout and setInterval
-  timerManager.clear();
-};
-
 const status = new Status();
 const foundWords = new Results();
+const searchFrom = new SearchForm();
 const wordsInput = new WordsInput();
 const graphComponent = new GraphComponent({
   element: document.getElementById("graph")!,
   link: { arrowLength: 6 },
 });
+
+let shouldStopSearching = false;
+searchFrom.onStopSearch = () => {
+  shouldStopSearching = true;
+  // clear all javascript setTimeout and setInterval
+  timerManager.clear();
+  wordsInput.enable();
+};
 
 let trie = makeTrie(wordsInput.currentWords);
 
@@ -35,6 +35,7 @@ function makeTrie(words: string[]) {
   const trie = new Trie();
   trie.insertWords(words);
 
+  clearGraphHighLights(graphComponent);
   graphComponent.setData({
     links: Object.values(trie.allLinks),
     nodes: Object.values(trie.allNodes).map((node) => ({ ...node })),

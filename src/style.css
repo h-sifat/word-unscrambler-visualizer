@@ -190,7 +190,7 @@ form > * + * {
 
 .graph {
   max-width: 100%;
-  max-height: 92%;
+  max-height: 93%;
 }
 
 .force-graph-container > canvas {
